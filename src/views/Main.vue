@@ -13,6 +13,8 @@
 </template>
 
 <script>
+const packageJson = require('../../package.json');
+
 import marked from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/atelier-sulphurpool-light.css'
@@ -55,7 +57,7 @@ export default {
      */
     async loadQuestions() {
       for (const item of config) {
-        const res = await request.get(`markdown/${item.path}.md`)
+        const res = await request.get(`/${packageJson.name}/markdown/${item.path}.md`)
         const questions = parseMarkdown(res.data, item)
         this.questions.push.apply(this.questions, questions)
       }
@@ -124,6 +126,14 @@ export default {
 @media screen and (max-width: 500px) {
   .card {
     width: 100%;
+
+    .category {
+      border-color: #ebebeb;
+    }
+
+    .title {
+      padding: 10px 0 10px 0;
+    }
   }
 }
 </style>
