@@ -1,0 +1,129 @@
+<template>
+  <div class="page">
+    <div class="card">
+      <div class="loadding" v-if="isLoading">题目加载中...</div>
+      <div class="category">
+        <span class="category-name">随机出题器 / {{current.category}}</span>
+        <a class="switch" href="javascript:void(0);" @click="getRandomQuestion">换一换</a>
+      </div>
+      <h1 class="title">{{current.title}}</h1>
+      <div class="html-content" ref="content" v-html="current.content"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+import marked from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/atelier-sulphurpool-light.css'
+
+import request from '@/common/request'
+import { parseMarkdown } from '@/common/utils'
+import config from '@/config'
+
+export default {
+  name: 'Main',
+  data() {
+    return {
+      isLoading: true,
+      current: {
+        id: 1,
+        category: '',
+        title: '',
+        content: ''
+      },
+      questions: []
+    }
+  },
+  mounted() {
+    this.init()
+  },
+  methods: {
+    /**
+     * 初始化
+     */
+    async init() {
+      // 加载题目
+      await this.loadQuestions()
+      // 随机获取一道题目
+      this.getRandomQuestion()
+      // 取消加载状态
+      this.isLoading = false
+    },
+    /**
+     * 加载题目
+     */
+    async loadQuestions() {
+      for (const item of config) {
+        const res = await request.get(`markdown/${item.path}.md`)
+        const questions = parseMarkdown(res.data, item)
+        this.questions.push.apply(this.questions, questions)
+      }
+    },
+    /**
+     * 随机获取一道题目
+     */
+    getRandomQuestion() {
+      const index = Math.floor((Math.random()*this.questions.length))
+      const item = this.questions[index]
+      item.content = marked(item.content)
+      this.current = item
+      this.$nextTick(() => {
+        const blocks = this.$refs.content.querySelectorAll('pre code')
+        blocks.forEach((block) => {
+          hljs.highlightBlock(block)
+        })
+      })
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.card {
+  position: relative;
+  margin: 0 auto;
+  width: 900px;
+  font-size: 16px;
+  padding: 0 18px 18px 18px;
+  
+  .category {
+    padding: 32px 0 32px 0;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #e9e9e9;
+    font-size: 14px;
+
+    .category-name {
+      color: gray;
+    }
+    
+    .switch {
+      color: #1b73e7;
+    }
+  }
+
+  .title {
+    padding: 20px 0 20px 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .loadding {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 16px;
+    text-align: center;
+    padding-top: 100px;
+    background-color: #fff;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .card {
+    width: 100%;
+  }
+}
+</style>
