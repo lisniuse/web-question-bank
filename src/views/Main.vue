@@ -4,7 +4,7 @@
       <div class="loadding" v-if="isLoading">题目加载中...</div>
       <div class="category">
         <span class="category-name">随机出题器 / {{current.category}}</span>
-        <a class="switch" href="javascript:void(0);" @click="getQuestion()">换一换</a>
+        <a class="switch" href="javascript:void(0);" @click="handleRandom">换一换</a>
       </div>
       <h1 class="title">{{current.title}}</h1>
       <div class="html-content" ref="content" v-html="current.content"></div>
@@ -50,8 +50,8 @@ export default {
     async init() {
       // 异步加载题目
       await this.loadQuestions()
-      // 随机获取一道题目
-      this.getQuestion(this.$route.query.id)
+      // 获取当前题目或者随机题目
+      this.initQuestion()
       // 取消加载状态
       this.isLoading = false
     },
@@ -66,30 +66,44 @@ export default {
       }
     },
     /**
+     * 点击换一换
+     */
+    handleRandom() {
+      this.initQuestion(true);
+    },
+    /**
+     * 当前题目初始化
+     */
+    initQuestion(isRandom = false) {
+      this.current = isRandom ? this.getQuestionByRandom() : (this.getQuestionByUrl() || this.getQuestionByRandom())
+      this.switchRouter();
+      this.highlight();
+    },
+    /**
+     * 通过路由ID的获取题目
+     */
+    getQuestionByUrl() {
+      const { id } = this.$route.query;
+      if (!id) return;
+      const currentId = id.split('_').join('/');
+      const findItem = this.questions.find(item => item.id === currentId)
+      return findItem;
+    },
+    /**
      * 随机获取一道题目
      */
-    getQuestion(id) {
-      let item = '';
-      if (id) {
-        const currentId = id.split('_').join('/');
-        const findItem = this.questions.find(item => item.id === currentId)
-        if (findItem) item = findItem
-      } else {
-        const index = Math.floor((Math.random()*this.questions.length))
-        item = this.questions[index]
-      }
-      this.current = item
-      this.switchRouter(item);
-      this.highlight();
+    getQuestionByRandom() {
+      const index = Math.floor((Math.random()*this.questions.length))
+      return this.questions[index]
     },
     /**
      * 路由切换
      */
-    switchRouter(question) {
+    switchRouter() {
       const { name, query } = this.$route
-      const nextId = question.id.split('/').join('_')
-      if (!(name === 'Main' && query.id === nextId)) {
-        this.$router.push({ name: 'Main', query: { id: nextId } })
+      const id = this.current.id.split('/').join('_')
+      if (!(name === 'Main' && query.id === id)) {
+        this.$router.push({ name: 'Main', query: { id } })
       }
     },
     /**
@@ -97,7 +111,8 @@ export default {
      */
     highlight() {
       this.$nextTick(() => {
-        this.$refs.content.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block))
+        this.$refs.content.querySelectorAll('pre code')
+          .forEach(block => hljs.highlightBlock(block))
       })
     }
   }
