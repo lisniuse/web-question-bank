@@ -19,7 +19,7 @@ export function parseMarkdown(content, config) {
     const nextItem = matchTitleList[index + 1]
     const startIndex = item.index + item.mdTitle.length
     questions.push({
-      id: index + 1,
+      id: `${config.path}/${index + 1}`,
       category,
       title: item.title,
       content: content.substring(startIndex, nextItem ? nextItem.index : content.length)

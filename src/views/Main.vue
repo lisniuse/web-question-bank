@@ -4,10 +4,14 @@
       <div class="loadding" v-if="isLoading">题目加载中...</div>
       <div class="category">
         <span class="category-name">随机出题器 / {{current.category}}</span>
-        <a class="switch" href="javascript:void(0);" @click="getRandomQuestion">换一换</a>
+        <a class="switch" href="javascript:void(0);" @click="getQuestion">换一换</a>
       </div>
       <h1 class="title">{{current.title}}</h1>
       <div class="html-content" ref="content" v-html="current.content"></div>
+      <div class="footer">
+        <a href="https://github.com/lisniuse/web-question-bank">GitHub</a>
+        <a href="https://github.com/lisniuse/web-question-bank#打赏作者">打赏作者</a>
+      </div>
     </div>
   </div>
 </template>
@@ -48,7 +52,7 @@ export default {
       // 加载题目
       await this.loadQuestions()
       // 随机获取一道题目
-      this.getRandomQuestion()
+      this.getQuestion(this.$route.query.id)
       // 取消加载状态
       this.isLoading = false
     },
@@ -65,17 +69,20 @@ export default {
     /**
      * 随机获取一道题目
      */
-    getRandomQuestion() {
+    getQuestion(id) {
+      let item = '';
       const index = Math.floor((Math.random()*this.questions.length))
-      const item = this.questions[index]
+      item = this.questions[index]
+      if (id) {
+        const findItem = this.questions.find(item => item.id === id)
+        if (findItem) item = findItem
+      }
       item.content = marked(item.content)
       this.current = item
       this.$nextTick(() => {
-        const blocks = this.$refs.content.querySelectorAll('pre code')
-        blocks.forEach((block) => {
-          hljs.highlightBlock(block)
-        })
+        this.$refs.content.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block))
       })
+      this.$router.push({ name: 'Main', query: { id: item.id } })
     }
   }
 }
@@ -111,6 +118,17 @@ export default {
     font-weight: bold;
   }
 
+  .footer {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #f4f4f4;
+    a {
+      font-size: 16px;
+      margin-right: 10px;
+      text-decoration: underline;
+    }
+  }
+
   .loadding {
     position: absolute;
     left: 0;
@@ -123,7 +141,7 @@ export default {
   }
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 900px) {
   .card {
     width: 100%;
 
