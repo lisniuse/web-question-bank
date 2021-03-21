@@ -17,7 +17,7 @@
 </template>
 
 <script>
-const packageJson = require('../../package.json');
+const packageJson = require('../../package.json')
 
 import hljs from 'highlight.js'
 import 'highlight.js/styles/atelier-sulphurpool-light.css'
@@ -69,25 +69,25 @@ export default {
      * 点击换一换
      */
     handleRandom() {
-      this.initQuestion(true);
+      this.initQuestion(true)
     },
     /**
      * 当前题目初始化
      */
     initQuestion(isRandom = false) {
       this.current = isRandom ? this.getQuestionByRandom() : (this.getQuestionByUrl() || this.getQuestionByRandom())
-      this.switchRouter();
-      this.highlight();
+      this.switchRouter()
+      this.highlight()
     },
     /**
      * 通过路由ID的获取题目
      */
     getQuestionByUrl() {
-      const { id } = this.$route.query;
-      if (!id) return;
-      const currentId = id.split('_').join('/');
+      const { id } = this.$route.query
+      if (!id) return
+      const currentId = id.split('_').join('/')
       const findItem = this.questions.find(item => item.id === currentId)
-      return findItem;
+      return findItem
     },
     /**
      * 随机获取一道题目
