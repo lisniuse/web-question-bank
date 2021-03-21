@@ -1,3 +1,6 @@
+
+import marked from 'marked'
+
 /**
  * 解析Markdown内容
  */
@@ -22,8 +25,8 @@ export function parseMarkdown(content, config) {
       id: `${config.path}/${index + 1}`,
       category,
       title: item.title,
-      content: content.substring(startIndex, nextItem ? nextItem.index : content.length)
-    });
+      content: marked(content.substring(startIndex, nextItem ? nextItem.index - 1 : content.length))
+    })
   }
   return questions
 }

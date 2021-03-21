@@ -1,3 +1,7 @@
+/**
+ * path 是相对路径，相对于 public/markdown/
+ * level 是题目的H标签等级，用于解析题目
+ */
 export default [
   { path: 'JavaScript/JavaScript', level: 4 },
   { path: 'Css/Css', level: 4 },

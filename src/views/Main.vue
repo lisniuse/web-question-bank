@@ -4,7 +4,7 @@
       <div class="loadding" v-if="isLoading">题目加载中...</div>
       <div class="category">
         <span class="category-name">随机出题器 / {{current.category}}</span>
-        <a class="switch" href="javascript:void(0);" @click="getQuestion">换一换</a>
+        <a class="switch" href="javascript:void(0);" @click="getQuestion()">换一换</a>
       </div>
       <h1 class="title">{{current.title}}</h1>
       <div class="html-content" ref="content" v-html="current.content"></div>
@@ -19,7 +19,6 @@
 <script>
 const packageJson = require('../../package.json');
 
-import marked from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/atelier-sulphurpool-light.css'
 
@@ -49,7 +48,7 @@ export default {
      * 初始化
      */
     async init() {
-      // 加载题目
+      // 异步加载题目
       await this.loadQuestions()
       // 随机获取一道题目
       this.getQuestion(this.$route.query.id)
@@ -71,18 +70,35 @@ export default {
      */
     getQuestion(id) {
       let item = '';
-      const index = Math.floor((Math.random()*this.questions.length))
-      item = this.questions[index]
       if (id) {
-        const findItem = this.questions.find(item => item.id === id)
+        const currentId = id.split('_').join('/');
+        const findItem = this.questions.find(item => item.id === currentId)
         if (findItem) item = findItem
+      } else {
+        const index = Math.floor((Math.random()*this.questions.length))
+        item = this.questions[index]
       }
-      item.content = marked(item.content)
       this.current = item
+      this.switchRouter(item);
+      this.highlight();
+    },
+    /**
+     * 路由切换
+     */
+    switchRouter(question) {
+      const { name, query } = this.$route
+      const nextId = question.id.split('/').join('_')
+      if (!(name === 'Main' && query.id === nextId)) {
+        this.$router.push({ name: 'Main', query: { id: nextId } })
+      }
+    },
+    /**
+     * 代码高亮
+     */
+    highlight() {
       this.$nextTick(() => {
         this.$refs.content.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block))
       })
-      this.$router.push({ name: 'Main', query: { id: item.id } })
     }
   }
 }
@@ -95,20 +111,20 @@ export default {
   width: 900px;
   font-size: 16px;
   padding: 0 18px 18px 18px;
+
+  a {
+    color: #1b73e7;
+  }
   
   .category {
     padding: 32px 0 32px 0;
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid #e9e9e9;
+    border-bottom: 1px solid #f4f4f4;
     font-size: 14px;
 
     .category-name {
       color: gray;
-    }
-    
-    .switch {
-      color: #1b73e7;
     }
   }
 
